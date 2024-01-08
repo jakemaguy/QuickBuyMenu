@@ -26,7 +26,7 @@ namespace QuickBuyMenu
             {
                 Instance = this;
             }
-            Plugin.Log = Logger;
+            Log = Logger;
 
             NetcodeWeaver();
 
@@ -47,7 +47,7 @@ namespace QuickBuyMenu
                 DisplayName = "buy",
                 Description = "Purchases the given item based off the items ID number.",
                 HasDynamicInput = true,
-                Arguments = new string[] { "itemID" },
+                Arguments = ["itemID"],
                 HideFromCommandList = true,
             };
 
@@ -79,7 +79,7 @@ namespace QuickBuyMenu
             stringBuilder2.Append("QUICK BUY MENU\n");
             for (int i = 0; i < __terminal.buyableItemsList.Length; i++)
             {
-                stringBuilder2.Append("\n* " + __terminal.buyableItemsList[i].itemName + "  //  Price: $" + ((float)__terminal.buyableItemsList[i].creditsWorth * ((float)__terminal.itemSalesPercentages[i] / 100f)).ToString());
+                stringBuilder2.Append("\n* " + __terminal.buyableItemsList[i].itemName + "  //  Price: $" + (__terminal.buyableItemsList[i].creditsWorth * (__terminal.itemSalesPercentages[i] / 100f)).ToString());
                 bool flag = __terminal.itemSalesPercentages[i] != 100;
                 if (flag)
                 {
@@ -117,7 +117,8 @@ namespace QuickBuyMenu
                     else
                     {
                         GameNetworkManager.Instance.localPlayerController.carryWeight += Mathf.Clamp(__terminal.buyableItemsList[itemIndex].weight - 1f, 0f, 10f);
-                        QuickBuyNetworkHandler.Instance.EventServerRpc(itemIndex, NetworkManager.Singleton.LocalClientId, default(ServerRpcParams));
+                        QuickBuyNetworkHandler.Instance.EventServerRpc(itemIndex, NetworkManager.Singleton.LocalClientId);
+                        
                         __terminal.groupCredits -= (int)itemCost;
                         __terminal.SyncGroupCreditsServerRpc(__terminal.groupCredits, __terminal.numberOfItemsInDropship);
                         result = CreateTerminalNode(string.Format("You have purchased a {0} at a cost of {1}\n", item.itemName, itemCost), true, "");

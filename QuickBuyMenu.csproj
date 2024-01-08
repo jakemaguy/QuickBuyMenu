@@ -4,11 +4,11 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>QuickBuyMenu</AssemblyName>
     <Description>An experimental mod for providing an alternative means to purchase handheld items instantly from the Terminal.</Description>
-    <Version>1.0.0</Version>
+    <Version>0.0.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
@@ -43,4 +43,8 @@
     <Folder Include="DLL\" />
     <Folder Include="Assets\" />
   </ItemGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="netcode-patch bin\Debug\netstandard2.1\QuickBuyMenu.dll DLL" />
+  </Target>
 </Project>

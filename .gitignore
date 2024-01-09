@@ -364,3 +364,5 @@ FodyWeavers.xsd
 
 DLL/*
 !DLL/README.md
+
+Releases/

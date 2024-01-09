@@ -84,7 +84,7 @@ All notable changes to this project will be documented in this section.
 
 - Testing out compatibility with reserved slot core mods
 
-## [0.0.1] - 01/08/2024
+## [1.0.0] - 01/08/2024
 
 - Initial release of the mod
 

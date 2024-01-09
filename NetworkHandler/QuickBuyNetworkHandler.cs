@@ -97,5 +97,14 @@ namespace QuickBuyMenu.NetworkHandler
             NetworkObject clientItem = obj;
             playerController.GrabObjectClientRpc(true, clientItem);
         }
+
+
+        [ServerRpc(RequireOwnership = false)]
+        public void SyncGroupCreditsServerRpc(int groupCredits, int numItemsInDropShip)
+        {
+            Terminal __terminal = FindObjectOfType<Terminal>();
+
+            __terminal.SyncGroupCreditsServerRpc(groupCredits, numItemsInDropShip);
+        }
     }
 }

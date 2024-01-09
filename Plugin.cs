@@ -101,7 +101,7 @@ namespace QuickBuyMenu
             if (flag)
             {
                 Item item = __terminal.buyableItemsList[itemIndex];
-                float itemCost = __terminal.buyableItemsList[itemIndex].creditsWorth * (__terminal.itemSalesPercentages[itemIndex] / 100f);
+                var itemCost = __terminal.buyableItemsList[itemIndex].creditsWorth * (__terminal.itemSalesPercentages[itemIndex] / 100f);
 
                 if (__terminal.groupCredits - itemCost < 0)
                 {
@@ -116,11 +116,14 @@ namespace QuickBuyMenu
                     }
                     else
                     {
+                        var weight = Mathf.Clamp(__terminal.buyableItemsList[itemIndex].weight - 1f, 0f, 10f);
+                        Log.LogDebug($"Item carry weight: {weight}\n Current Player weight: {GameNetworkManager.Instance.localPlayerController.carryWeight}");
                         GameNetworkManager.Instance.localPlayerController.carryWeight += Mathf.Clamp(__terminal.buyableItemsList[itemIndex].weight - 1f, 0f, 10f);
+                        
                         QuickBuyNetworkHandler.Instance.EventServerRpc(itemIndex, NetworkManager.Singleton.LocalClientId);
                         
                         __terminal.groupCredits -= (int)itemCost;
-                        __terminal.SyncGroupCreditsServerRpc(__terminal.groupCredits, __terminal.numberOfItemsInDropship);
+                        QuickBuyNetworkHandler.Instance.SyncGroupCreditsServerRpc(__terminal.groupCredits, __terminal.numberOfItemsInDropship);
                         result = CreateTerminalNode(string.Format("You have purchased a {0} at a cost of {1}\n", item.itemName, itemCost), true, "");
                     }
                 }

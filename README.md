@@ -15,7 +15,7 @@ With quick buy menu, you can buy handheld items in Lethal Company in a faster an
 
 ## Installation - Thunderstore
 
-### TODO
+Download with the Thunderstore Mod Manager: [Quick Buy Menu](https://thunderstore.io/c/lethal-company/p/befuddled_productions/Quick_Buy_Menu/)
 
 ## Installation - Manual
 
@@ -38,7 +38,7 @@ With quick buy menu, you can buy handheld items in Lethal Company in a faster an
 
 # Contributing
 
-Thank you for your interest in contributing to Quick Buy Menu - Lethal Company. This mod is open to suggestions and improvements from the community. Please read the following guidelines before making any changes to the project.
+PR's and suggestions are welcome.
 
 ## Build Instructions
 
@@ -72,10 +72,6 @@ If you want to contribute code or documentation to the project, you are welcome 
 - If requested, make any necessary changes and update your pull request.
 - Once your pull request is merged, delete your branch and sync your fork with the upstream repository.
 
-## License
-
-By contributing to this project, you agree that your contributions will be licensed under the same license as the project, which is [MIT License](https://contribute.cncf.io/maintainers/templates/contributing/).
-
 # Changelog
 
 All notable changes to this project will be documented in this section.
@@ -83,6 +79,11 @@ All notable changes to this project will be documented in this section.
 ## [Unreleased]
 
 - Testing out compatibility with reserved slot core mods
+
+## [1.0.1] - 01/09/2024
+
+- Change terminal text from `buy (Item Number)` to `buy (Item Name)`
+- Changed thunderstore Icon
 
 ## [1.0.0] - 01/08/2024
 

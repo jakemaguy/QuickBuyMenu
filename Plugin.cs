@@ -86,7 +86,7 @@ namespace QuickBuyMenu
                     stringBuilder2.Append(string.Format("   ({0}% OFF!)", 100 - __terminal.itemSalesPercentages[i]));
                 }
             }
-            stringBuilder2.Append("\n\nMake your selection by entering:\nbuy (Item Number)\n");
+            stringBuilder2.Append("\n\nMake your selection by entering:\nbuy (Item Name)\n");
             return CreateTerminalNode(stringBuilder2.ToString(), true, "");
         }
 
@@ -118,8 +118,8 @@ namespace QuickBuyMenu
                     {
                         var weight = Mathf.Clamp(__terminal.buyableItemsList[itemIndex].weight - 1f, 0f, 10f);
                         Log.LogDebug($"Item carry weight: {weight}\n Current Player weight: {GameNetworkManager.Instance.localPlayerController.carryWeight}");
-                        GameNetworkManager.Instance.localPlayerController.carryWeight += Mathf.Clamp(__terminal.buyableItemsList[itemIndex].weight - 1f, 0f, 10f);
-                        
+                        GameNetworkManager.Instance.localPlayerController.carryWeight += weight;
+
                         QuickBuyNetworkHandler.Instance.EventServerRpc(itemIndex, NetworkManager.Singleton.LocalClientId);
                         
                         __terminal.groupCredits -= (int)itemCost;

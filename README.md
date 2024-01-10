@@ -81,6 +81,10 @@ If you want to contribute code or documentation to the project, you are welcome 
 
 All notable changes to this project will be documented in this section.
 
+## [1.0.3] - 01/10/2024
+
+- Fixed [github issue #6](https://github.com/jakemaguy/QuickBuyMenu/issues/6) where single handed items bought from Quick Buy were overlapping if you bought multiple items consecutively, without exiting the terminal.
+
 ## [1.0.2] - 01/10/2024
 
 - Fixed [github issue #5](https://github.com/jakemaguy/QuickBuyMenu/issues/5) where hyphens `-` weren't parsed correctly.

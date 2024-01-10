@@ -92,7 +92,7 @@ namespace QuickBuyMenu
 
         private static TerminalNode RunQuickBuy(Terminal __terminal)
         {
-            string input = GetInputValue(__terminal);
+            string input = RemovePunctuation(__terminal.screenText.text.Substring(__terminal.screenText.text.Length - __terminal.textAdded));
             input = input.Substring(4); // everything after 'buy '
             Log.LogDebug("Terminal Input from purchase command: " + input);
             int itemIndex = FindItemIndex(__terminal, input);
@@ -136,9 +136,29 @@ namespace QuickBuyMenu
         }
 
         // case insensitive string.Contains() alternative
+        // Sanitizes inputs with Hyphens with whitespace for comparison purposes
+        // example input: [wallkie talkie] will match item name [walkie-talkie]
         private static int FindItemIndex(Terminal terminal, string input)
         {
-            return Array.FindIndex<Item>(terminal.buyableItemsList, (Item item) => item.itemName.IndexOf(input, StringComparison.OrdinalIgnoreCase) >= 0);
+            return Array.FindIndex(
+                terminal.buyableItemsList, (Item item) => 
+                item.itemName.Replace('-', ' ').IndexOf(input.Replace('-', ' '), 
+                StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        // Overriding SimpleAPI RemovePunctuation to allow Hyphens
+        private static string RemovePunctuation(string s)
+        {
+            StringBuilder stringBuilder = new();
+            foreach (char c in s)
+            {
+                if (c.Equals('-') || (!char.IsSymbol(c) && !char.IsPunctuation(c)))
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder.ToString().ToLower();
         }
     }
 }

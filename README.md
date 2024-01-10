@@ -2,6 +2,9 @@
 
 With quick buy menu, you can buy handheld items in Lethal Company in a faster and easier way. No more wasting time for the Drop Ship to show up. This mod lets you instantly get an item from the Terminal and put it in your inventory.
 
+<p align="center">
+<img src="https://github.com/jakemaguy/QuickBuyMenu/assets/36657294/d5ddcbde-15cd-4fb5-ac9a-079084b7576f" width="70%">
+</p>
 
 ## Features
 
@@ -12,6 +15,8 @@ With quick buy menu, you can buy handheld items in Lethal Company in a faster an
 		- `qbuy`
 - Allows you to select from a list of available items, sorted by category and price
 - Automatically deducts the item cost from your credits and adds the item to your inventory
+- Compatible with [Reserved Slot Item](https://thunderstore.io/c/lethal-company/p/FlipMods/ReservedItemSlotCore/) related Mods
+
 
 ## Installation - Thunderstore
 
@@ -29,7 +34,7 @@ Download with the Thunderstore Mod Manager: [Quick Buy Menu](https://thunderstor
 
 - Open the Terminal in the game
 - Type the `quickbuy` option from the menu (or alternative abbreviations)
-- Purchase an Item from the list with the command: `buy (item-name)`
+- Purchase an Item from the list with the command: `buy (Item Name)`
 	- The item name doesn't have to be the entire name.  It can be a substring.
 		- Examples: 
 			- `buy shov` will purchase a shovel
@@ -75,10 +80,6 @@ If you want to contribute code or documentation to the project, you are welcome 
 # Changelog
 
 All notable changes to this project will be documented in this section.
-
-## [Unreleased]
-
-- Testing out compatibility with reserved slot core mods
 
 ## [1.0.1] - 01/09/2024
 

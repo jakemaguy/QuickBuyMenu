@@ -13,9 +13,20 @@ With quick buy menu, you can buy handheld items in Lethal Company in a faster an
 		- `qb`
 		- `quickb`
 		- `qbuy`
-- Allows you to select from a list of available items, sorted by category and price
+- Allows you to select from a list of available handheld items, similar to the vanilla STORE page
 - Automatically deducts the item cost from your credits and adds the item to your inventory
 - Compatible with [Reserved Slot Item](https://thunderstore.io/c/lethal-company/p/FlipMods/ReservedItemSlotCore/) related Mods
+
+## Usage
+
+- Open the Terminal in the game
+- Type the `quickbuy` option from the menu (or alternative abbreviations)
+- Purchase an Item from the list with the command: `buy (Item Name)`
+	- The item name doesn't have to be the entire name.  It can be a substring.
+		- Examples: 
+			- `buy shov` will purchase a shovel
+			- `buy walk` will purchase a walkie-talkie
+- Enjoy your new item!
 
 
 ## Installation - Thunderstore
@@ -29,17 +40,6 @@ Download with the Thunderstore Mod Manager: [Quick Buy Menu](https://thunderstor
 	- [Simple Command API](https://thunderstore.io/c/lethal-company/p/XDev/SimpleCommandAPI/)
 - Download the latest release from the Releases page
 - Copy the `QuickBuyMenu.dll` and `QuickBuyMenuAssets` files to your `BepInEx\plugins\` folder
-
-## Usage
-
-- Open the Terminal in the game
-- Type the `quickbuy` option from the menu (or alternative abbreviations)
-- Purchase an Item from the list with the command: `buy (Item Name)`
-	- The item name doesn't have to be the entire name.  It can be a substring.
-		- Examples: 
-			- `buy shov` will purchase a shovel
-			- `buy walk` will purchase a walkie-talkie
-- Enjoy your new item!
 
 # Contributing
 

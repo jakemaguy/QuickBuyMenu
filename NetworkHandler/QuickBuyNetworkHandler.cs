@@ -43,10 +43,14 @@ namespace QuickBuyMenu.NetworkHandler
                 if (obj.TryGet(out targetObject))
                 {
                     GrabbableObject clientItem = targetObject.GetComponent<GrabbableObject>();
+
+                    if (playerController.currentlyGrabbingObject != null)
+                        playerController.currentlyGrabbingObject.EnableItemMeshes(false);
+
                     clientItem.EnableItemMeshes(true);
                     clientItem.playerHeldBy = playerController;
                     clientItem.playerHeldBy.currentlyGrabbingObject = clientItem;
-                    playerController.currentlyHeldObjectServer = clientItem;
+                    clientItem.playerHeldBy.currentlyHeldObjectServer = clientItem;
 
                     if (!(NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer))
                     {

@@ -81,6 +81,10 @@ If you want to contribute code or documentation to the project, you are welcome 
 
 All notable changes to this project will be documented in this section.
 
+## [1.0.4] - 01/10/2024
+
+- Fixed [github issue #9](https://github.com/jakemaguy/QuickBuyMenu/issues/9) which fixed broken behavior when purchasing a Lockpicker.
+
 ## [1.0.3] - 01/10/2024
 
 - Fixed [github issue #6](https://github.com/jakemaguy/QuickBuyMenu/issues/6) where single handed items bought from Quick Buy were overlapping if you bought multiple items consecutively, without exiting the terminal.

@@ -30,7 +30,7 @@ namespace QuickBuyMenu.NetworkHandler
         }
 
         [ClientRpc]
-        public void EventClientRpc(int eventName, ulong clientId, NetworkObjectReference obj = default(NetworkObjectReference), ClientRpcParams clientRpcParams = default(ClientRpcParams))
+        public void EventClientRpc(ulong clientId, NetworkObjectReference obj = default(NetworkObjectReference), ClientRpcParams clientRpcParams = default(ClientRpcParams))
         {
             if (clientId == NetworkManager.Singleton.LocalClientId)
             {
@@ -44,13 +44,19 @@ namespace QuickBuyMenu.NetworkHandler
                 {
                     GrabbableObject clientItem = targetObject.GetComponent<GrabbableObject>();
 
-                    if (playerController.currentlyGrabbingObject != null)
-                        playerController.currentlyGrabbingObject.EnableItemMeshes(false);
+                    // This prevents overlapping items when multiple items are purhchased in terminal session without exiting.
+                    // editing currentlyHeldObjectServer prevents other spawned item meshes to dissapear when its set to render false.
+                    playerController.currentlyHeldObjectServer?.EnableItemMeshes(false);
 
                     clientItem.EnableItemMeshes(true);
                     clientItem.playerHeldBy = playerController;
                     clientItem.playerHeldBy.currentlyGrabbingObject = clientItem;
                     clientItem.playerHeldBy.currentlyHeldObjectServer = clientItem;
+
+                    if (clientItem.itemProperties.itemName == "Lockpicker")
+                    {
+                        clientItem.GetComponent<LockPicker>().lockPickerAudio = clientItem.gameObject.GetComponent<AudioSource>();
+                    }
 
                     if (!(NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer))
                     {
@@ -88,7 +94,7 @@ namespace QuickBuyMenu.NetworkHandler
             netObj.Spawn(false);
             netObj.ChangeOwnership(clientId);
             
-            EventClientRpc(itemID, clientId, netObj);
+            EventClientRpc(clientId, netObj);
         }
 
         [ServerRpc(RequireOwnership = false)]

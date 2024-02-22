@@ -78,23 +78,34 @@ namespace QuickBuyMenu.NetworkHandler
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void EventServerRpc(int itemID, ulong clientId, ServerRpcParams serverRpcParams = default(ServerRpcParams))
+        public void EventServerRpc(int itemID, ulong clientId, int itemIndex, ServerRpcParams serverRpcParams = default(ServerRpcParams))
         {
             PlayerControllerB playerController = GameNetworkManager.Instance.localPlayerController.playersManager.allPlayerScripts[clientId];
             Plugin.Log.LogDebug(string.Format("Running EventServerRPC method\n${0}, client ID: {1}\n", playerController.playerUsername, playerController.actualClientId));
             
             Terminal __terminal = FindObjectOfType<Terminal>();
+
+            bool inventoryFull = playerController.FirstEmptyItemSlot() == -1;
+            Vector3 itemSpawn = playerController.transform.position;
+
+            if (inventoryFull)
+            {
+                itemSpawn.x = (float)(playerController.transform.position.x + (itemIndex * -0.5));
+            }
             
             GameObject gameObject = Instantiate(
                 __terminal.buyableItemsList[itemID].spawnPrefab, 
-                playerController.transform.position, 
+                itemSpawn, 
                 Quaternion.identity);
 
             NetworkObject netObj = gameObject.GetComponent<NetworkObject>();
             netObj.Spawn(false);
             netObj.ChangeOwnership(clientId);
-            
-            EventClientRpc(clientId, netObj);
+
+            if (!inventoryFull)
+            {
+                EventClientRpc(clientId, netObj);
+            }
         }
 
         [ServerRpc(RequireOwnership = false)]

@@ -87,6 +87,7 @@ namespace QuickBuyMenu
                 }
             }
             stringBuilder2.Append("\n\nMake your selection by entering:\nbuy (Item Name)\n");
+            stringBuilder2.Append("or:\nbuy (Quantity) (Item Name)\n\n");
             return CreateTerminalNode(stringBuilder2.ToString(), true, "");
         }
 
@@ -94,44 +95,72 @@ namespace QuickBuyMenu
         {
             string input = RemovePunctuation(__terminal.screenText.text.Substring(__terminal.screenText.text.Length - __terminal.textAdded));
             input = input.Substring(4); // everything after 'buy '
-            Log.LogDebug("Terminal Input from purchase command: " + input);
-            int itemIndex = FindItemIndex(__terminal, input);
-            bool flag = itemIndex != -1;
+            string[] args = input.Split(' ');
+            string itemName;
+            
+            int numItems;
             TerminalNode result;
+            
+            if (args.Length > 1)
+            {
+                if (!int.TryParse(args[0], out numItems))
+                {
+                    return CreateTerminalNode($"Invalid Argument for number of items: {args[0]}\n", true, "");
+                }
+
+                if (numItems < 1)
+                {
+                    return CreateTerminalNode($"Argument for number of items must be greater than or equal to 1\n", true, "");
+                }
+                itemName = args[1];
+                
+            }
+            else
+            {
+                numItems = 1;
+                itemName = args[0];
+            }
+
+            Log.LogDebug("Terminal Input from purchase command: " + itemName);
+            int itemIndex = FindItemIndex(__terminal, itemName);
+            bool flag = itemIndex != -1;
+
             if (flag)
             {
                 Item item = __terminal.buyableItemsList[itemIndex];
-                var itemCost = __terminal.buyableItemsList[itemIndex].creditsWorth * (__terminal.itemSalesPercentages[itemIndex] / 100f);
+                var itemCost = (__terminal.buyableItemsList[itemIndex].creditsWorth * (__terminal.itemSalesPercentages[itemIndex] / 100f) * numItems);
 
                 if (__terminal.groupCredits - itemCost < 0)
                 {
-                    result = CreateTerminalNode(string.Format("You have insufficient funds to purchase a {0} at a cost of {1}\n", item.itemName, itemCost), true, "");
+                    result = (numItems > 1) ? CreateTerminalNode($"You have insufficient funds to purchase {numItems} {item.itemName}s at a cost of {itemCost}\n", true, "")
+                        : CreateTerminalNode(string.Format("You have insufficient funds to purchase a {0} at a cost of {1}\n", item.itemName, itemCost), true, "");
                 }
                 else
                 {
-                    bool flag3 = GameNetworkManager.Instance.localPlayerController.FirstEmptyItemSlot() == -1;
-                    if (flag3)
+                    for (int i = 0; i < numItems; i++)
                     {
-                        result = CreateTerminalNode("Your inventory is currently full.\n", true, "");
+                        bool flag3 = GameNetworkManager.Instance.localPlayerController.FirstEmptyItemSlot() == -1;
+                        if (!flag3)
+                        {
+                            var weight = Mathf.Clamp(__terminal.buyableItemsList[itemIndex].weight - 1f, 0f, 10f);
+                            Log.LogDebug($"Item carry weight: {weight}\n Current Player weight: {GameNetworkManager.Instance.localPlayerController.carryWeight}");
+                            GameNetworkManager.Instance.localPlayerController.carryWeight += weight;
+                        }
+                        QuickBuyNetworkHandler.Instance.EventServerRpc(itemIndex, NetworkManager.Singleton.LocalClientId, i - 3); // 3 is just an abriturary x pos offset 
                     }
-                    else
-                    {
-                        var weight = Mathf.Clamp(__terminal.buyableItemsList[itemIndex].weight - 1f, 0f, 10f);
-                        Log.LogDebug($"Item carry weight: {weight}\n Current Player weight: {GameNetworkManager.Instance.localPlayerController.carryWeight}");
-                        GameNetworkManager.Instance.localPlayerController.carryWeight += weight;
+                    __terminal.groupCredits -= (int)itemCost;
+                    QuickBuyNetworkHandler.Instance.SyncGroupCreditsServerRpc(__terminal.groupCredits, __terminal.numberOfItemsInDropship);
 
-                        QuickBuyNetworkHandler.Instance.EventServerRpc(itemIndex, NetworkManager.Singleton.LocalClientId);
-                        
-                        __terminal.groupCredits -= (int)itemCost;
-                        QuickBuyNetworkHandler.Instance.SyncGroupCreditsServerRpc(__terminal.groupCredits, __terminal.numberOfItemsInDropship);
-                        result = CreateTerminalNode(string.Format("You have purchased a {0} at a cost of {1}\n", item.itemName, itemCost), true, "");
-                    }
+                    result = numItems > 1 ?
+                        CreateTerminalNode($"You have purchased {numItems} {item.itemName}s at a total cost of {itemCost}\n", true, "") 
+                        :  CreateTerminalNode(string.Format("You have purchased a {0} at a cost of {1}\n", item.itemName, itemCost), true, "");
                 }
             }
             else
             {
                 result = CreateTerminalNode("Item not found in store: " + input + "\n", true, "");
             }
+
             return result;
         }
 

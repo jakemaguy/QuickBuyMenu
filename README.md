@@ -15,6 +15,7 @@ With quick buy menu, you can buy handheld items in Lethal Company in a faster an
 		- `qbuy`
 - Allows you to select from a list of available handheld items, similar to the vanilla STORE page
 - Automatically deducts the item cost from your credits and adds the item to your inventory
+   - If your inventory is full, it will spawn the items on the ground near your players feet.
 - Compatible with [Reserved Slot Item](https://thunderstore.io/c/lethal-company/p/FlipMods/ReservedItemSlotCore/) related Mods
 
 ## Usage
@@ -26,7 +27,11 @@ With quick buy menu, you can buy handheld items in Lethal Company in a faster an
 		- Examples: 
 			- `buy shov` will purchase a shovel
 			- `buy walk` will purchase a walkie-talkie
-- Enjoy your new item!
+- Since version ```1.1.0```, you can purchase multiple items by specifying an optional quantity argument
+   - Usage: ```buy (quantity) (Item Name)```
+        - Examples: 
+			- `buy 3 shov` will purchase 3 shovels
+			- `buy 4 walk` will purchase 4 walkie talkies
 
 
 ## Installation - Thunderstore
@@ -49,7 +54,7 @@ PR's and suggestions are welcome.
 
 - Install the [Unity Netcode Patcher](https://github.com/EvaisaDev/UnityNetcodePatcher) via the dotnet cli: `dotnet tool install -g Evaisa.NetcodePatcher.Cli`
 	- If you already have it installed, make sure you upgrade to the latest version: `dotnet tool update -g Evaisa.NetcodePatcher.Cli`
-- Clone the repository and clone it to your local machine.
+- Clone the repository to your local machine.
 - Download the PreRequisite Mod DLL's to your `QuickBuyMenu\DLL` folder:
 	- [Terminal Api](https://thunderstore.io/c/lethal-company/p/NotAtomicBomb/TerminalApi/)
 	- [Simple Command API](https://thunderstore.io/c/lethal-company/p/XDev/SimpleCommandAPI/)
@@ -80,6 +85,10 @@ If you want to contribute code or documentation to the project, you are welcome 
 # Changelog
 
 All notable changes to this project will be documented in this section.
+
+## [1.1.0] - 02/21/2024
+
+- Implemented suggestion in [github issue #14](https://github.com/jakemaguy/QuickBuyMenu/issues/14) which allows you to specify an optional argument to purchase multiple items.
 
 ## [1.0.4] - 01/10/2024
 

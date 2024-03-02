@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>QuickBuyMenu</AssemblyName>
     <Description>An experimental mod for providing an alternative means to purchase handheld items instantly from the Terminal.</Description>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -45,6 +45,6 @@
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="netcode-patch bin\Debug\netstandard2.1\QuickBuyMenu.dll DLL" />
+    <Exec Command="netcode-patch obj\debug DLL" />
   </Target>
 </Project>

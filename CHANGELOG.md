@@ -1,6 +1,6 @@
-# Changelog
+## [1.1.1] - 03/01/2024
 
-All notable changes to this project will be documented in this section.
+- Fixed [github issue #17](https://github.com/jakemaguy/QuickBuyMenu/issues/17) Where the netcode patcher was not patching the mod DLL correctly.
 
 ## [1.1.0] - 02/21/2024
 

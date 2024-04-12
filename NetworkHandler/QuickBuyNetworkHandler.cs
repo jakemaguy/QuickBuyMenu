@@ -53,9 +53,20 @@ namespace QuickBuyMenu.NetworkHandler
                     clientItem.playerHeldBy.currentlyGrabbingObject = clientItem;
                     clientItem.playerHeldBy.currentlyHeldObjectServer = clientItem;
 
-                    if (clientItem.itemProperties.itemName == "Lockpicker")
+
+                    switch (clientItem.itemProperties.itemName)
                     {
-                        clientItem.GetComponent<LockPicker>().lockPickerAudio = clientItem.gameObject.GetComponent<AudioSource>();
+                        case "Lockpicker":
+                            clientItem.GetComponent<LockPicker>().lockPickerAudio = clientItem.gameObject.GetComponent<AudioSource>();
+                            break;
+                        case "Shotgun":
+                            clientItem.GetComponent<ShotgunItem>().previousPlayerHeldBy = playerController;
+                            clientItem.GetComponent<ShotgunItem>().hasBeenHeld = true;
+                            clientItem.GetComponent<ShotgunItem>().previousPlayerHeldBy.equippedUsableItemQE = true;
+                            clientItem.GetComponentInParent<Component>().gameObject.GetComponentInChildren<ScanNodeProperties>().nodeType = 2;
+                            break;
+                        default:
+                            break;
                     }
 
                     if (!(NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer))

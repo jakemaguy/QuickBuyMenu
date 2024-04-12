@@ -1,3 +1,7 @@
+## [1.2.0] - 04/12/2024
+
+- Fixed [github issue #19](https://github.com/jakemaguy/QuickBuyMenu/issues/19) Added compatibility with Buyable Shotgun mod.
+
 ## [1.1.1] - 03/01/2024
 
 - Fixed [github issue #17](https://github.com/jakemaguy/QuickBuyMenu/issues/17) Where the netcode patcher was not patching the mod DLL correctly.

@@ -46,5 +46,6 @@
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="netcode-patch obj\debug DLL" />
+    <Exec Command="xcopy /f /y &quot;obj\debug\netstandard2.1\QuickBuyMenu.dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\plugins&quot;" />
   </Target>
 </Project>

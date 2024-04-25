@@ -1,3 +1,9 @@
+## [1.2.1] - 04/24/2024
+
+- Fixed [github issue #21](https://github.com/jakemaguy/QuickBuyMenu/issues/21) 
+- Fixed invisible items when purchasing multiple items.
+- Added post build Event to automatically copy DLL to steam lethal company directory when building.
+
 ## [1.2.0] - 04/12/2024
 
 - Fixed [github issue #19](https://github.com/jakemaguy/QuickBuyMenu/issues/19) Added compatibility with Buyable Shotgun mod.

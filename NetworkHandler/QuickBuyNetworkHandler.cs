@@ -52,6 +52,7 @@ namespace QuickBuyMenu.NetworkHandler
                     clientItem.playerHeldBy = playerController;
                     clientItem.playerHeldBy.currentlyGrabbingObject = clientItem;
                     clientItem.playerHeldBy.currentlyHeldObjectServer = clientItem;
+                    clientItem.parentObject = playerController.localItemHolder;
 
 
                     switch (clientItem.itemProperties.itemName)

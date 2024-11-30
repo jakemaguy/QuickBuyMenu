@@ -146,7 +146,7 @@ namespace QuickBuyMenu
                             Log.LogDebug($"Item carry weight: {weight}\n Current Player weight: {GameNetworkManager.Instance.localPlayerController.carryWeight}");
                             GameNetworkManager.Instance.localPlayerController.carryWeight += weight;
                         }
-                        QuickBuyNetworkHandler.Instance.EventServerRpc(itemIndex, NetworkManager.Singleton.LocalClientId, i - 3); // 3 is just an abriturary x pos offset 
+                        QuickBuyNetworkHandler.Instance.EventServerRpc(itemIndex, GameNetworkManager.Instance.localPlayerController.actualClientId, i - 3 ); // 3 is just an abriturary x pos offset 
                     }
                     __terminal.groupCredits -= (int)itemCost;
                     QuickBuyNetworkHandler.Instance.SyncGroupCreditsServerRpc(__terminal.groupCredits, __terminal.numberOfItemsInDropship);

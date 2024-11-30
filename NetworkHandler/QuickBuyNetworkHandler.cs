@@ -84,40 +84,62 @@ namespace QuickBuyMenu.NetworkHandler
                     {
                         GameNetworkManager.Instance.StopCoroutine(coroutine);
                     }
-                    clientItem.playerHeldBy.grabObjectCoroutine = GameNetworkManager.Instance.StartCoroutineManaged2(clientItem.playerHeldBy.GrabObject());
+                    clientItem.playerHeldBy.grabObjectCoroutine = GameNetworkManager.Instance.StartCoroutine(clientItem.playerHeldBy.GrabObject());
                 }
             }
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void EventServerRpc(int itemID, ulong clientId, int itemIndex, ServerRpcParams serverRpcParams = default(ServerRpcParams))
+        public void EventServerRpc(int itemID, ulong clientId, int itemIndex,ServerRpcParams serverRpcParams = default)
         {
-            PlayerControllerB playerController = GameNetworkManager.Instance.localPlayerController.playersManager.allPlayerScripts[clientId];
-            Plugin.Log.LogDebug(string.Format("Running EventServerRPC method\n${0}, client ID: {1}\n", playerController.playerUsername, playerController.actualClientId));
-            
-            Terminal __terminal = FindObjectOfType<Terminal>();
-
-            bool inventoryFull = playerController.FirstEmptyItemSlot() == -1;
-            Vector3 itemSpawn = playerController.transform.position;
-
-            if (inventoryFull)
+            var clientIdTest = serverRpcParams.Receive.SenderClientId;
+            if (NetworkManager.ConnectedClients.ContainsKey(clientIdTest))
             {
-                itemSpawn.x = (float)(playerController.transform.position.x + (itemIndex * -0.5));
+                var client = NetworkManager.ConnectedClients[clientIdTest];
+                PlayerControllerB playerController = GameNetworkManager.Instance.localPlayerController.playersManager.allPlayerScripts[clientIdTest];
+                Plugin.Log.LogDebug(string.Format("Running EventServerRPC method\n${0}, client ID: {1}\n", playerController.playerUsername, playerController.actualClientId));
+
+                Terminal __terminal = FindObjectOfType<Terminal>();
+
+                bool inventoryFull = checkInventoryFull(playerController) == -1;
+                Vector3 itemSpawn = playerController.transform.position;
+
+                if (inventoryFull)
+                {
+                    itemSpawn.x = (float)(playerController.transform.position.x + (itemIndex * -0.5));
+                }
+
+                GameObject gameObject = Instantiate(
+                    __terminal.buyableItemsList[itemID].spawnPrefab,
+                    itemSpawn,
+                    Quaternion.identity);
+
+                NetworkObject netObj = gameObject.GetComponent<NetworkObject>();
+                netObj.Spawn(false);
+                netObj.ChangeOwnership(clientIdTest);
+
+                Plugin.Log.LogDebug($"Inventory Full Boolean: {inventoryFull}");
+                if (!inventoryFull)
+                {
+                    EventClientRpc(clientIdTest, netObj);
+                }
             }
             
-            GameObject gameObject = Instantiate(
-                __terminal.buyableItemsList[itemID].spawnPrefab, 
-                itemSpawn, 
-                Quaternion.identity);
+        }
 
-            NetworkObject netObj = gameObject.GetComponent<NetworkObject>();
-            netObj.Spawn(false);
-            netObj.ChangeOwnership(clientId);
-
-            if (!inventoryFull)
+        private int checkInventoryFull(PlayerControllerB player)
+        {
+            int result = -1;
+            //int length = player.ItemSlots.Length > 4 ? 5 : 4;
+            for (int i = 0; i < 4; i++)
             {
-                EventClientRpc(clientId, netObj);
+                if (player.ItemSlots[i] == null)
+                {
+                    result = i;
+                    break;
+                }
             }
+            return result;
         }
 
         [ServerRpc(RequireOwnership = false)]

@@ -1,34 +1,32 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
+using BepInEx.Configuration;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using Unity.Netcode;
 using GameNetcodeStuff;
 using LethalNetworkAPI;
-using System.Threading;
-using System.Xml.Linq;
-using LC_API;
-using System.Diagnostics;
 using TMPro;
-using System.Collections;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace QuickBuyMenu
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInPlugin("Quick.Buy.Menu", "Quick Buy Meny", "2.0.0")]
     [BepInDependency("LethalNetworkAPI")]
+    [BepInDependency("io.github.CSync")]
     public class Plugin : BaseUnityPlugin
     {
         private static Plugin Instance;
         internal static ManualLogSource Log;
         LNetworkMessage<string> clientItemSpawnRequest;
         LNetworkMessage<int> syncCredits;
+        List<string> blackListedItems;
+
+        public static new QuickBuyModConfig Config { get; private set; }
 
         private void Awake()
         {
@@ -37,10 +35,15 @@ namespace QuickBuyMenu
                 Instance = this;
             }
             Log = Logger;
-
-            //NetcodeWeaver();
-
             Log.LogDebug("Plugin QuickBuyMenu is loaded!");
+
+            Config = new(base.Config);
+
+            blackListedItems = Config.quickBuyItemBlacklist.Value
+                .Split(',')
+                .Select(item => item.Trim())
+                .Where(item => !string.IsNullOrEmpty(item))
+                .ToList();
 
             LC_API.ClientAPI.CommandHandler.RegisterCommand("quickbuy", new List<string> { "qb", "buy", "qbuy", }, RunQuickBuy);
 
@@ -51,10 +54,6 @@ namespace QuickBuyMenu
                 // get player controller reference based on request client id
                 PlayerControllerB playerController =
                     GameNetworkManager.Instance.localPlayerController.playersManager.allPlayerScripts[clientId];
-
-                // spawn object via LC API
-                //LC_API.GameInterfaceAPI.Features.Item.CreateAndGiveItem(itemName,
-                //    LC_API.GameInterfaceAPI.Features.Player.Get(playerController));
 
                 GameObject buyableItem = FindObjectOfType<Terminal>().buyableItemsList.FirstOrDefault(
                     kw => kw.name.Equals(itemName)).spawnPrefab;
@@ -91,11 +90,9 @@ namespace QuickBuyMenu
 
         private void RunQuickBuy(string[] obj)
         {
-            Terminal __terminal = FindObjectOfType<Terminal>();
+            Terminal terminal = FindObjectOfType<Terminal>();
 
-            // prevent people from using commands while off ship or in buildings - balancing
-            // TODO config file option to enable thiss
-            if (!GameNetworkManager.Instance.localPlayerController.isInHangarShipRoom)
+            if (!IsQuickBuyAllowed())
             {
                 chatMessageHandler("You can only use quick buy commands on the ship.", true);
                 return;
@@ -103,52 +100,82 @@ namespace QuickBuyMenu
 
             if (obj.Length > 0)
             {
-                int quantity = 1;
+                int quantity = GetQuantity(obj);
                 string itemKeyword = obj[0].Trim();
                 Logger.LogDebug($" item arg: {obj[0]}");
-                Item itemMatch = __terminal.buyableItemsList.FirstOrDefault(kw =>
-                        kw.name.Contains(itemKeyword, StringComparison.OrdinalIgnoreCase));
+
+                Item itemMatch = FindItemMatch(terminal, itemKeyword);
 
                 if (itemMatch == null)
                 {
-                    itemMatch = __terminal.buyableItemsList.FirstOrDefault(kw =>
-                        kw.name.Equals(itemKeyword, StringComparison.OrdinalIgnoreCase));
-                }
-
-                if (obj.Length == 2 && int.TryParse(obj[1], out int parsedQuantity))
-                {
-                    quantity = parsedQuantity;
-                }
-
-                // check if cost and determine if theres enough money
-                var itemCost = itemMatch.creditsWorth * (__terminal.itemSalesPercentages[
-                    Array.IndexOf(__terminal.buyableItemsList, itemMatch)] / 100f) * quantity;
-                int adjustedCredits = __terminal.groupCredits - (int)itemCost;
-
-                if (adjustedCredits < 0)
-                {
-                    chatMessageHandler($"Not Enough Credits\n\nTotal Cost: ${itemCost}\nCredits: ${__terminal.groupCredits}", true);
+                    chatMessageHandler($"Item {itemKeyword} not found.", true);
                     return;
                 }
 
-                Logger.LogDebug($"Run quick buy: Item match name: {itemMatch.name}");
-                clientItemSpawnRequest.SendServer(itemMatch.name);
+                if (blackListedItems.Exists(item => item.Equals(itemMatch.itemName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    chatMessageHandler($"{itemMatch.itemName} is blacklisted.", true);
+                    return;
+                }
 
-                //update the terminal credits and rpc sync
-                __terminal.groupCredits = adjustedCredits;
-                // sync the credit count over network
-                if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer)
+                if (!HasEnoughCredits(terminal, itemMatch, quantity, out var itemCost, out var adjustedCredits))
                 {
-                    syncCredits.SendClients(adjustedCredits);
+                    chatMessageHandler($"Not Enough Credits\n\nTotal Cost: ${itemCost}\nCredits: ${terminal.groupCredits}", true);
+                    return;
                 }
-                else
-                {
-                    syncCredits.SendOtherClients(adjustedCredits);
-                }
-                chatMessageHandler($"Order Summary\n\n{itemMatch.itemName}\nQuantity: {quantity}\nTotal: ${(int)itemCost}\nCredits: ${adjustedCredits}"); 
+
+                ProcessQuickBuy(terminal, itemMatch, quantity, itemCost, adjustedCredits);
             }
         }
 
+        private bool IsQuickBuyAllowed()
+        {
+            return Config.allowQuickBuyOffShip.Value || GameNetworkManager.Instance.localPlayerController.isInHangarShipRoom;
+        }
+
+        private int GetQuantity(string[] obj)
+        {
+            return obj.Length == 2 && int.TryParse(obj[1], out int parsedQuantity) ? parsedQuantity : 1;
+        }
+
+        private Item FindItemMatch(Terminal terminal, string itemKeyword)
+        {
+            return terminal.buyableItemsList.FirstOrDefault(kw =>
+                       kw.name.Contains(itemKeyword, StringComparison.OrdinalIgnoreCase)) ??
+                   terminal.buyableItemsList.FirstOrDefault(kw =>
+                       kw.name.Equals(itemKeyword, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private bool HasEnoughCredits(Terminal terminal, Item itemMatch, int quantity, out float itemCost, out int adjustedCredits)
+        {
+            itemCost = itemMatch.creditsWorth * (terminal.itemSalesPercentages[
+                Array.IndexOf(terminal.buyableItemsList, itemMatch)] / 100f) * quantity;
+            adjustedCredits = terminal.groupCredits - (int)itemCost;
+            return adjustedCredits >= 0;
+        }
+
+        private void ProcessQuickBuy(Terminal terminal, Item itemMatch, int quantity, float itemCost, int adjustedCredits)
+        {
+            Logger.LogDebug($"Run quick buy: Item match name: {itemMatch.name}");
+            clientItemSpawnRequest.SendServer(itemMatch.name);
+
+            terminal.groupCredits = adjustedCredits;
+            SyncCredits(adjustedCredits);
+
+            chatMessageHandler($"Order Summary\n\n{itemMatch.itemName}\nQuantity: {quantity}\nTotal: ${(int)itemCost}\nCredits: ${adjustedCredits}");
+        }
+
+        private void SyncCredits(int adjustedCredits)
+        {
+            if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer)
+            {
+                syncCredits.SendClients(adjustedCredits);
+            }
+            else
+            {
+                syncCredits.SendOtherClients(adjustedCredits);
+            }
+        }
         private void chatMessageHandler(string message, bool isWarning = false)
         {
             string color = isWarning ? "red" : "green";
@@ -164,11 +191,9 @@ namespace QuickBuyMenu
             var audioClip = isWarning ? HUDManager.Instance.warningSFX : HUDManager.Instance.tipsSFX;
             RoundManager.PlayRandomClip(HUDManager.Instance.UIAudio, audioClip, randomize: false);
 
-            quickBuyChatMessageDelayHandler();
+            quickBuyChatMessageDelayHandler(Config.quickBuyMessagesFadeDelay.Value);
         }
-
-
-        private async void quickBuyChatMessageDelayHandler(int seconds = 5)
+        private async void quickBuyChatMessageDelayHandler(int seconds)
         {
             await Task.Delay(seconds * 1000);
 

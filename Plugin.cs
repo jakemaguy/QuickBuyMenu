@@ -12,6 +12,7 @@ using GameNetcodeStuff;
 using LethalNetworkAPI;
 using TMPro;
 using System.Threading.Tasks;
+using UnityEngine.UIElements;
 
 namespace QuickBuyMenu
 {
@@ -22,11 +23,23 @@ namespace QuickBuyMenu
     {
         private static Plugin Instance;
         internal static ManualLogSource Log;
-        LNetworkMessage<string> clientItemSpawnRequest;
+        LNetworkMessage<ClientItemRequestParams> clientItemSpawnRequest;
         LNetworkMessage<int> syncCredits;
         List<string> blackListedItems;
 
         public static new QuickBuyModConfig Config { get; private set; }
+
+        public struct ClientItemRequestParams : INetworkSerializeByMemcpy
+        {
+            public string ItemName;
+            public int clientIndex;
+
+            void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+            {
+                serializer.SerializeValue(ref ItemName);
+                serializer.SerializeValue(ref clientIndex);
+            }
+        }
 
         private void Awake()
         {
@@ -46,17 +59,16 @@ namespace QuickBuyMenu
                 .ToList();
 
             LC_API.ClientAPI.CommandHandler.RegisterCommand("quickbuy", new List<string> { "qb", "buy", "qbuy", }, RunQuickBuy);
+            LC_API.ClientAPI.CommandHandler.RegisterCommand("price-check", new List<string> { "qc", "inquire", "check", "pc" }, RunPriceCheck);
 
-            clientItemSpawnRequest = LNetworkMessage<string>.Create(identifier: "clientItemSpawnRequest", (itemName, clientId) =>
+            clientItemSpawnRequest = LNetworkMessage<ClientItemRequestParams>.Create(identifier: "clientItemSpawnRequest", (clientRequest, clientId) =>
             {
-
-                Logger.LogDebug($"Message Handler: {itemName}");
-                // get player controller reference based on request client id
+                // get player controller reference based on client index in request
                 PlayerControllerB playerController =
-                    GameNetworkManager.Instance.localPlayerController.playersManager.allPlayerScripts[clientId];
-
+                    GameNetworkManager.Instance.localPlayerController.playersManager.allPlayerScripts[clientRequest.clientIndex];
+             
                 GameObject buyableItem = FindObjectOfType<Terminal>().buyableItemsList.FirstOrDefault(
-                    kw => kw.name.Equals(itemName)).spawnPrefab;
+                    kw => kw.name.Equals(clientRequest.ItemName)).spawnPrefab;
 
                 if (buyableItem != null)
                 {
@@ -68,7 +80,7 @@ namespace QuickBuyMenu
                     component.GiveTo(
                         LC_API.GameInterfaceAPI.Features.Player.Get(playerController), 
                         true);
-                }
+                }  
             });
 
             syncCredits = LNetworkMessage<int>.Create("syncCredits", (credits, clientId) =>
@@ -127,6 +139,44 @@ namespace QuickBuyMenu
                 ProcessQuickBuy(terminal, itemMatch, quantity, itemCost, adjustedCredits);
             }
         }
+        private void RunPriceCheck(string[] obj)
+        {
+            Terminal terminal = FindObjectOfType<Terminal>();
+
+            if (!IsQuickBuyAllowed())
+            {
+                chatMessageHandler("You can only use quick buy commands on the ship.", true);
+                return;
+            }
+
+            if (obj.Length > 0)
+            {
+                string itemKeyword = obj[0].Trim();
+                int quantity = GetQuantity(obj);
+
+                Item itemMatch = FindItemMatch(terminal, itemKeyword);
+                
+                if (itemMatch == null)
+                {
+                    chatMessageHandler($"Item {itemKeyword} not found.", true);
+                    return;
+                }
+
+                if (blackListedItems.Exists(item => item.Equals(itemMatch.itemName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    chatMessageHandler($"{itemMatch.itemName} is blacklisted.", true);
+                    return;
+                }
+
+                if (!HasEnoughCredits(terminal, itemMatch, quantity, out var itemCost, out var adjustedCredits))
+                {
+                    chatMessageHandler($"Price Check\nNot Enough Credits\n\nItem: {itemMatch.itemName}\nQuantity: {quantity}\nTotal Cost: ${itemCost}\nGroup Credits: ${terminal.groupCredits}", true);
+                    return;
+                }
+
+                chatMessageHandler($"Price Check\n\nItem: {itemMatch.itemName}\nQuantity: {quantity}\nTotal Cost: ${itemCost}\nGroup Credits: ${terminal.groupCredits}");
+            }       
+        }
 
         private bool IsQuickBuyAllowed()
         {
@@ -156,8 +206,17 @@ namespace QuickBuyMenu
 
         private void ProcessQuickBuy(Terminal terminal, Item itemMatch, int quantity, float itemCost, int adjustedCredits)
         {
-            Logger.LogDebug($"Run quick buy: Item match name: {itemMatch.name}");
-            clientItemSpawnRequest.SendServer(itemMatch.name);
+            // get current clientIndex in connected players array to retrieve the clientId
+            int clientIndex = Array.FindIndex(GameNetworkManager.Instance.localPlayerController.playersManager.allPlayerScripts,
+                player => player.actualClientId.Equals(GameNetworkManager.Instance.localPlayerController.actualClientId));
+            
+            for (int i = 0; i < quantity; i++)
+            {
+                ClientItemRequestParams clientRequest = new ClientItemRequestParams();
+                clientRequest.clientIndex = clientIndex;
+                clientRequest.ItemName = itemMatch.name;
+                clientItemSpawnRequest.SendServer(clientRequest);
+            }
 
             terminal.groupCredits = adjustedCredits;
             SyncCredits(adjustedCredits);

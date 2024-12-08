@@ -1,37 +1,39 @@
 # Quick Buy Menu - Lethal Company Mod
 
-With quick buy menu, you can buy handheld items in Lethal Company in a faster and easier way. No more wasting time for the Drop Ship to show up. This mod lets you instantly get an item from the Terminal and put it in your inventory.
+With quick buy menu, you can buy handheld items in Lethal Company in a faster and easier way. No more wasting time for the Drop Ship to show up. This mod lets you instantly purchase items and put them in your inventory.
 
-<p align="center">
-<img src="https://github.com/jakemaguy/QuickBuyMenu/assets/36657294/d5ddcbde-15cd-4fb5-ac9a-079084b7576f" width="70%">
-</p>
 
 ## Features
 
-- Adds a new option to the Terminal menu: `quickbuy`
-	- Alternative Abbreviations:
-		- `qb`
-		- `quickb`
-		- `qbuy`
-- Allows you to select from a list of available handheld items, similar to the vanilla STORE page
-- Automatically deducts the item cost from your credits and adds the item to your inventory
-   - If your inventory is full, it will spawn the items on the ground near your players feet.
-- Compatible with [Reserved Slot Item](https://thunderstore.io/c/lethal-company/p/FlipMods/ReservedItemSlotCore/) related Mods
+- Adds a couple new chat commands to Lethal Company
+	- `/quickbuy <item-name> <optional: item quantity>`
+    	- Alternative Abbreviations:
+    		- `qb`
+    		- `buy`
+    		- `qbuy`
+        - Automatically deducts the item cost from your credits and adds the item to your inventory.
+        - Compatible with [Reserved Slot Item](https://thunderstore.io/c/lethal-company/p/FlipMods/ReservedItemSlotCore/) related Mods
+    - `/pricecheck <item-name> <optional: item quantity>`
+    	- Alternative Abbreviations:
+    		- `qc`
+    		- `inquire`
+    		- `check`
+    		- `pc`
+		- Quickly Show the price of an order and it tells you if you can afford it.
 
 ## Usage
 
-- Open the Terminal in the game
-- Type the `quickbuy` option from the menu (or alternative abbreviations)
-- Purchase an Item from the list with the command: `buy (Item Name)`
+- Press `/` to start typing in chat
+- Type `/quickbuy <item-name> <optional: quantity>` (or alternative abbreviations), and press enter
 	- The item name doesn't have to be the entire name.  It can be a substring.
 		- Examples: 
-			- `buy shov` will purchase a shovel
-			- `buy walk` will purchase a walkie-talkie
+			- `/quickbuy shov` will purchase a shovel
+			- `/quickbuy walk` will purchase a walkie-talkie
 - Since version ```1.1.0```, you can purchase multiple items by specifying an optional quantity argument
-   - Usage: ```buy (quantity) (Item Name)```
+   - Usage: ```/quickbuy <Item Name> <optional: quantity>```
         - Examples: 
-			- `buy 3 shov` will purchase 3 shovels
-			- `buy 4 walk` will purchase 4 walkie talkies
+			- `/quickbuy 3 shov` will purchase 3 shovels
+			- `/quickbuy 4 walk` will purchase 4 walkie talkies
 
 
 ## Installation - Thunderstore
@@ -41,10 +43,11 @@ Download with the Thunderstore Mod Manager: [Quick Buy Menu](https://thunderstor
 ## Installation - Manual
 
 - Download the following Prerequisite Mods into your `BepInEx\plugins\` folder
-	- [Terminal Api](https://thunderstore.io/c/lethal-company/p/NotAtomicBomb/TerminalApi/)
-	- [Simple Command API](https://thunderstore.io/c/lethal-company/p/XDev/SimpleCommandAPI/)
+	- [LC_API_V50](https://thunderstore.io/c/lethal-company/p/DrFeederino/LC_API_V50/)
+	- [Lethal Network Api](https://github.com/Xilophor/LethalNetworkAPI)
+	- [CSync](https://thunderstore.io/c/lethal-company/p/Owen3H/CSync/)
 - Download the latest release from the Releases page
-- Copy the `QuickBuyMenu.dll` and `QuickBuyMenuAssets` files to your `BepInEx\plugins\` folder
+- Copy the `QuickBuyMenu.dll` to your `BepInEx\plugins\` folder
 
 # Contributing
 
@@ -52,35 +55,18 @@ PR's and suggestions are welcome.
 
 ## Build Instructions
 
-- Install the [Unity Netcode Patcher](https://github.com/EvaisaDev/UnityNetcodePatcher) via the dotnet cli: `dotnet tool install -g Evaisa.NetcodePatcher.Cli`
-	- If you already have it installed, make sure you upgrade to the latest version: `dotnet tool update -g Evaisa.NetcodePatcher.Cli`
+- Set an environment variable `LETHAL_COMPANY_DIR` that points to where Lethal company is installed.
+    - example `LETHAL_COMPANY_DIR=C:\Program Files (x86)\Steam\steamapps\common\Lethal Company`
 - Clone the repository to your local machine.
 - Download the PreRequisite Mod DLL's to your `QuickBuyMenu\DLL` folder:
-	- [Terminal Api](https://thunderstore.io/c/lethal-company/p/NotAtomicBomb/TerminalApi/)
-	- [Simple Command API](https://thunderstore.io/c/lethal-company/p/XDev/SimpleCommandAPI/)
-- Copy all of the Lethal Company DLL files from `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\` into  the `QuickBuyMenu\DLL` folder.
-- Build with visual Studio using the `Debug` configuration
-	- We are using Debug, not Release, because the Netcode Patcher requires the `.pdb` files in order to work.
+	- [LC_API_V50](https://thunderstore.io/c/lethal-company/p/DrFeederino/LC_API_V50/)
+	- [Lethal Network Api](https://github.com/Xilophor/LethalNetworkAPI)
+	- [CSync](https://thunderstore.io/c/lethal-company/p/Owen3H/CSync/)
+- Build with visual Studio
 
 ## Issues
 
 If you encounter any bugs, errors, or feature requests, please open an issue on the [issue tracker](https://github.com/jakemaguy/QuickBuyMenu/issues). Before creating a new issue, please check if there is already an existing one that addresses your problem. When creating an issue, please provide as much information as possible to help resolve it.
-
-## Pull Requests
-
-If you want to contribute code or documentation to the project, you are welcome to submit a pull request. Please follow these steps to create a pull request:
-
-- Make sure to review the Build Instructions.  
-	- Ensure you have the latest version of the Unity Netcode Patcher Installed.
-- Fork the repository and clone it to your local machine.
-- Create a new branch from the main branch with a descriptive name.
-- Make your changes in the new branch.
-- Test out your changes in game.
-- Commit your changes with a clear and concise message, referencing any issues that your pull request fixes or relates to.
-- Push your branch to your forked repository and create a pull request from it to the main branch of the original repository.
-- Wait for the project maintainer or a reviewer to review your pull request and provide feedback or approval.
-- If requested, make any necessary changes and update your pull request.
-- Once your pull request is merged, delete your branch and sync your fork with the upstream repository.
 
 ## Credits
 

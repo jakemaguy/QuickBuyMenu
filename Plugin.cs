@@ -64,9 +64,11 @@ namespace QuickBuyMenu
             clientItemSpawnRequest = LNetworkMessage<ClientItemRequestParams>.Create(identifier: "clientItemSpawnRequest", (clientRequest, clientId) =>
             {
                 // get player controller reference based on client index in request
-                PlayerControllerB playerController =
-                    GameNetworkManager.Instance.localPlayerController.playersManager.allPlayerScripts[clientRequest.clientIndex];
-             
+                LC_API.GameInterfaceAPI.Features.Player playerController =
+                    LC_API.GameInterfaceAPI.Features.Player
+                    .Get(GameNetworkManager.Instance.localPlayerController.playersManager.allPlayerScripts[clientRequest.clientIndex]);
+                
+
                 GameObject buyableItem = FindObjectOfType<Terminal>().buyableItemsList.FirstOrDefault(
                     kw => kw.name.Equals(clientRequest.ItemName)).spawnPrefab;
 
@@ -77,9 +79,7 @@ namespace QuickBuyMenu
                     LC_API.GameInterfaceAPI.Features.Item component = obj.GetComponent
                         <LC_API.GameInterfaceAPI.Features.Item>();
 
-                    component.GiveTo(
-                        LC_API.GameInterfaceAPI.Features.Player.Get(playerController), 
-                        true);
+                    component.GiveTo(playerController, true);
                 }  
             });
 
@@ -103,7 +103,7 @@ namespace QuickBuyMenu
         private void RunQuickBuy(string[] obj)
         {
             Terminal terminal = FindObjectOfType<Terminal>();
-
+            
             if (!IsQuickBuyAllowed())
             {
                 chatMessageHandler("You can only use quick buy commands on the ship.", true);
@@ -127,6 +127,11 @@ namespace QuickBuyMenu
                 if (blackListedItems.Exists(item => item.Equals(itemMatch.itemName, StringComparison.OrdinalIgnoreCase)))
                 {
                     chatMessageHandler($"{itemMatch.itemName} is blacklisted.", true);
+                    return;
+                }
+
+                if (!CheckPlayerInventory(quantity))
+                {
                     return;
                 }
 
@@ -202,6 +207,31 @@ namespace QuickBuyMenu
                 Array.IndexOf(terminal.buyableItemsList, itemMatch)] / 100f) * quantity;
             adjustedCredits = terminal.groupCredits - (int)itemCost;
             return adjustedCredits >= 0;
+        }
+
+        private bool CheckPlayerInventory(int quantity)
+        {
+            LC_API.GameInterfaceAPI.Features.Player player =
+                    LC_API.GameInterfaceAPI.Features.Player.Get(GameNetworkManager.Instance.localPlayerController);
+            
+            if (player.Inventory.GetFirstEmptySlot() == -1)
+            {
+                chatMessageHandler($"Inventory is Full.", true);
+                return false;
+            }
+
+            Log.LogDebug($"Item slots length: {player.PlayerController.ItemSlots.Length}");
+
+            int InventoryItemsCount = player.Inventory.Items.Where(item => item != null).ToArray().Length;
+            int freeSlotsAvailable = player.PlayerController.ItemSlots.Length - InventoryItemsCount;
+
+            if (quantity > (player.PlayerController.ItemSlots.Length - InventoryItemsCount))
+            {
+                chatMessageHandler($"Not enough inventory space for this order.", true);
+                return false;
+            }
+
+            return true;
         }
 
         private void ProcessQuickBuy(Terminal terminal, Item itemMatch, int quantity, float itemCost, int adjustedCredits)

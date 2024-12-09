@@ -1,3 +1,10 @@
+## [2.0.0] - 12/08/2024
+
+- Updating mod support for v68
+- Major overhaul of mod replacing terminal based interface with chat commands
+	- Terminal API mod wasnt compatible with V68
+- Major refactoring utilizing mod APIs to handle manually implemented features
+
 ## [1.2.1] - 04/24/2024
 
 - Fixed [github issue #21](https://github.com/jakemaguy/QuickBuyMenu/issues/21) 

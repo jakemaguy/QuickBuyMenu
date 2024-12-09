@@ -1,4 +1,6 @@
-# Quick Buy Menu - Lethal Company Mod
+# Quick Buy Menu - Lethal Company Mod (v68) 
+
+**All users of this mod should upgrade to version `2.*` or greater**
 
 With quick buy menu, you can buy handheld items in Lethal Company in a faster and easier way. No more wasting time for the Drop Ship to show up. This mod lets you instantly purchase items and put them in your inventory.
 
@@ -34,6 +36,31 @@ With quick buy menu, you can buy handheld items in Lethal Company in a faster an
         - Examples: 
 			- `/quickbuy 3 shov` will purchase 3 shovels
 			- `/quickbuy 4 walk` will purchase 4 walkie talkies
+
+## Configuration Properties
+Config file located in `BepInEx\config\Quick.Buy.Menu.cfg`
+
+```
+## Settings file was created by plugin Quick Buy Meny v2.0.0
+## Plugin GUID: Quick.Buy.Menu
+
+[General]
+
+## Boolean that lets you buy items off ship.  For balancing this is set to false as default.
+# Setting type: Boolean
+# Default value: false
+AllowQuickBuyOffShip = false
+
+## Timer in seconds for how long the Quick Buy chat messages should appear before they are deleted.
+# Setting type: Int32
+# Default value: 5
+quickBuyMessagesFadeDelay = 5
+
+## Comma Seperated List of Items to be blacklisted by Quick Buy.  Example: 'Walkie-Talkie,FlashLight,Boombox'
+# Setting type: String
+# Default value: 
+QuickBuyItemBlacklist = 
+```
 
 
 ## Installation - Thunderstore
